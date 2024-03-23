@@ -1,9 +1,6 @@
 /**
  * James Scott
  * Student ID: SBA23056
- *
- *Description to be added
- *
  * GitHub Repository: <a href="https://github.com/Jamesscott34/IntegratedCA.git">...</a>
  */
 
@@ -16,3 +13,4 @@ public class Main {
         menu.closeScanner();
     }
 }
+
