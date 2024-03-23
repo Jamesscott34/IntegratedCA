@@ -1,15 +1,12 @@
 import java.sql.*;
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 
 
 public class Admin {
-    private static Scanner input;
-    public Admin(){
-        this.input = new Scanner(System.in);
-    }
+    private static Map<String, List<User>> userTables = new HashMap<>();
+    private static List<User> allUsers = new ArrayList<>();
+    private static Scanner input = new Scanner(System.in);
+
 
 
     public static void modifyUser() {
@@ -26,7 +23,6 @@ public class Admin {
             System.out.println("Failed to update admin username.");
         }
     }
-
     private static boolean updateUserInDatabase(String newUsername) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -65,9 +61,10 @@ public class Admin {
     }
 
 
-    public static void deleteUser() {
-        // Retrieve users from the database and display them with numbers
-        List<User> users = getUsersFromDatabase();
+
+    public static void deleteFromTable(String tableName) {
+        // Retrieve users from the specified table in the database and display them with numbers
+        List<User> users = getUsersFromDatabase(tableName);
         displayUsers(users);
 
         // Prompt the admin to select the user to delete
@@ -79,9 +76,9 @@ public class Admin {
         String confirm = input.next();
 
         if (confirm.equalsIgnoreCase("yes")) {
-            // Delete the selected user from the database
+            // Delete the selected user from the specified table in the database
             User userToDelete = users.get(userNumber - 1);
-            boolean deleted = deleteUserFromDatabase(userToDelete.getUsername());
+            boolean deleted = deleteUserFromDatabase(userToDelete.getUsername(), tableName);
 
             if (deleted) {
                 System.out.println("User deleted successfully.");
@@ -91,61 +88,78 @@ public class Admin {
 
             // Save the remaining users to an ArrayList
             users.remove(userNumber - 1);
-            saveUsersToArrayList(users);
+            saveUsersToArrayList(users, tableName);
         } else {
             System.out.println("Deletion canceled.");
         }
     }
 
-    public static List<User> getUsersFromDatabase() {
-        List<User> users = new ArrayList<>();
+
+
+
+    public static boolean deleteUserFromDatabase(String username, String tableName) {
         Connection conn = null;
-        Statement stmt = null;
-        ResultSet rs = null;
+        PreparedStatement stmt = null;
 
         try {
-            // Establish connection to the database
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
-
-            // Create SQL query to fetch users
-            String sql = "SELECT * FROM user";
-            stmt = conn.createStatement();
-
-            // Execute query
-            rs = stmt.executeQuery(sql);
-
-            // Iterate through the result set and create User objects
-            while (rs.next()) {
-                String username = rs.getString("username");
-                String password = rs.getString("password");
-                String roleStr = rs.getString("role");
-                Menu.UserRole role;
-                try {
-                    role = Menu.UserRole.valueOf(roleStr.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    // Handle the case where the role string doesn't match any enum constant
-                    System.out.println("Invalid role found in database: " + roleStr);
-                    continue; // Skip this user and proceed with the next one
-                }
-                User user = new User(username, password, role);
-                users.add(user);
-            }
+            String query = "DELETE FROM " + tableName + " WHERE username = ?";
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, username);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
-            // Handle the SQL exception, e.g., log the error or throw a custom exception
+            return false;
         } finally {
-            // Close resources in the finally block to ensure they are always closed
             try {
-                if (rs != null) rs.close();
                 if (stmt != null) stmt.close();
                 if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void saveUsersToArrayList(List<User> users, String tableName) {
+        // Save the remaining users to separate ArrayLists based on the table name
+        userTables.put(tableName, users);
+
+        // Also, update the all-user ArrayList
+        updateAllUsers();
+    }
+    private static void updateAllUsers() {
+        allUsers.clear();
+        for (List<User> userList : userTables.values()) {
+            allUsers.addAll(userList);
+        }
+    }
+
+
+    public static List<User> getUsersFromDatabase(String tableName) {
+        String sqlQuery = "SELECT username, role FROM " + tableName;
+
+        // Execute the SQL query and retrieve the data from the database
+        List<User> users = new ArrayList<>();
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@")) {
+            try (Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(sqlQuery)) {
+                while (resultSet.next()) {
+                    String username = resultSet.getString("username");
+                    String role = resultSet.getString("role");
+                    users.add(new User(username, role));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Handle any SQL exceptions here
+        }
 
         return users;
     }
+
+
+
 
 
     static void displayUsers(List<User> users) {
@@ -155,52 +169,7 @@ public class Admin {
         }
     }
 
-    private static boolean deleteUserFromDatabase(String username) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        boolean deleted = false;
 
-        try {
-            // Establish connection to the database
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
-
-            // Prepare SQL statement to delete user
-            String sql = "DELETE FROM user WHERE username = ?";
-            stmt = conn.prepareStatement(sql);
-
-            // Set username parameter
-            stmt.setString(1, username);
-
-            // Execute the DELETE statement
-            int rowsAffected = stmt.executeUpdate();
-
-            // Check if deletion was successful
-            if (rowsAffected > 0) {
-                deleted = true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            // Close resources
-            try {
-                if (stmt != null) stmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return deleted;
-    }
-
-
-    private static List<User> saveUsersToArrayList(List<User> users) {
-        // Create a new ArrayList to store users
-        List<User> userList = new ArrayList<>(users);
-
-        // Return the ArrayList
-        return userList;
-    }
     public static void changePassword(String username) {
         // Prompt the user to enter the new password
         Scanner scanner = new Scanner(System.in);
@@ -257,49 +226,41 @@ public class Admin {
     }
 
     public static void addNewUserManually() {
-
         Connection conn = null;
         PreparedStatement stmt = null;
+        Scanner input = new Scanner(System.in);
 
         try {
             // Connect to the database
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
 
-            Menu.UserRole role = null;
-            boolean validRole = false;
-            while (!validRole) {
-                System.out.print("Enter role (Admin/office/lecturer): ");
-                String roleStr = input.nextLine().toUpperCase(); // Convert role to uppercase
+            // Prompt the admin for user details
+            System.out.print("Enter role (Admin/Lecturer/Office): ");
+            String roleStr = input.nextLine().toUpperCase(); // Convert role to uppercase
+            Menu.UserRole role = Menu.UserRole.valueOf(roleStr);
 
-                try {
-                    role = Menu.UserRole.valueOf(roleStr);
-                    validRole = true;
-                } catch (IllegalArgumentException e) {
-                    System.out.println("Invalid role. Please enter Admin, office, or lecturer.");
-                }
-            }
-
-            // Prompt the user for new user details
             System.out.print("Enter username: ");
             String username = input.nextLine();
+
             System.out.print("Enter password: ");
             String password = input.nextLine();
 
-
-
             // Prepare the SQL statement for inserting a new user
-            String sql;
-            if (role == Menu.UserRole.ADMIN) {
-                sql = "INSERT INTO Admins (username, password) VALUES (?, ?)";
-            } else {
-                sql = "INSERT INTO user (username, password, role) VALUES (?, ?, ?)";
+            String sql = "";
+            switch (role) {
+                case ADMIN:
+                    sql = "INSERT INTO Admins (username, password) VALUES (?, ?)";
+                    break;
+                case LECTURER:
+                    sql = "INSERT INTO Lecturer (username, password) VALUES (?, ?)";
+                    break;
+                case OFFICE:
+                    sql = "INSERT INTO Office (username, password) VALUES (?, ?)";
+                    break;
             }
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, username);
             stmt.setString(2, password);
-            if (role != Menu.UserRole.ADMIN) {
-                stmt.setString(3, role.toString());
-            }
 
             // Execute the SQL statement to insert the new user
             int rowsAffected = stmt.executeUpdate();
@@ -317,12 +278,13 @@ public class Admin {
             try {
                 if (stmt != null) stmt.close();
                 if (conn != null) conn.close();
-                input.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
         }
     }
+
+
 
 
 
