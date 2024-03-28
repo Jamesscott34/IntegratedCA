@@ -108,5 +108,105 @@ public class Office {
 
         return updated;
     }
+    public static void createCSVReport(String lecturerName) {
+        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
+        String username = "root";
+        String password = "Alison12@";
+
+        String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
+                "FROM Officereports " +
+                "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
+                "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
+
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            Path filePath = Paths.get("reports/officereport.csv");
+            writeReportToFile(resultSet, filePath);
+
+            System.out.println("CSV report generated successfully!");
+        } catch (SQLException | IOException e) {
+            System.err.println("Database error: " + e.getMessage());
+        }
+    }
+
+    public static void createTXTReport(String lecturerName) {
+        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
+        String username = "root";
+        String password = "Alison12@";
+
+        String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
+                "FROM Officereports " +
+                "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
+                "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
+
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            Path filePath = Paths.get("reports/officereport.txt");
+            writeReportToFile(resultSet, filePath);
+
+            System.out.println("TXT report generated successfully!");
+        } catch (SQLException | IOException e) {
+            System.err.println("Database error: " + e.getMessage());
+        }
+    }
+
+    public static void printToConsole(String lecturerName) {
+        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
+        String username = "root";
+        String password = "Alison12@";
+
+        String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
+                "FROM Officereports " +
+                "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
+                "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
+
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            // Printing to console
+            while (resultSet.next()) {
+                String studentName = resultSet.getString("StudentName");
+                String courseName = resultSet.getString("CourseName");
+                double grade = resultSet.getDouble("Grade");
+                String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
+                String studentFeedback = resultSet.getString("StudentFeedbackText");
+                String room = resultSet.getString("Room");
+
+                System.out.println("Student Name: " + studentName);
+                System.out.println("Course Name: " + courseName);
+                System.out.println("Grade: " + grade);
+                System.out.println("Lecturer Feedback: " + lecturerFeedback);
+                System.out.println("Student Feedback: " + studentFeedback);
+                System.out.println("Room: " + room);
+                System.out.println();
+            }
+        } catch (SQLException e) {
+            System.err.println("Database error: " + e.getMessage());
+        }
+    }
+
+    private static void writeReportToFile(ResultSet resultSet, Path filePath) throws IOException, SQLException {
+        try (FileWriter writer = new FileWriter(filePath.toFile())) {
+            writer.write("Student Name, Course Name, Grade, Lecturer Feedback, Student Feedback, Room\n");
+
+            while (resultSet.next()) {
+                String studentName = resultSet.getString("StudentName");
+                String courseName = resultSet.getString("CourseName");
+                double grade = resultSet.getDouble("Grade");
+                String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
+                String studentFeedback = resultSet.getString("StudentFeedbackText");
+                String room = resultSet.getString("Room");
+
+                writer.write(studentName + ", " + courseName + ", " + grade + ", " + lecturerFeedback + ", " + studentFeedback + ", " + room + "\n");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }
