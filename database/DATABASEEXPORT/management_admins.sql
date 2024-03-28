@@ -16,29 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `office`
+-- Table structure for table `admins`
 --
 
-DROP TABLE IF EXISTS `office`;
+DROP TABLE IF EXISTS `admins`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `office` (
-  `Office_id` int NOT NULL AUTO_INCREMENT,
+CREATE TABLE `admins` (
+  `admin_id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(50) DEFAULT NULL,
   `password` varchar(50) DEFAULT NULL,
   `role` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`Office_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`admin_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `office`
+-- Dumping data for table `admins`
 --
 
-LOCK TABLES `office` WRITE;
-/*!40000 ALTER TABLE `office` DISABLE KEYS */;
-INSERT INTO `office` VALUES (1,'office1','officepass1','Office'),(2,'office2','officepass2','Office'),(3,'office3','officepass3','Office');
-/*!40000 ALTER TABLE `office` ENABLE KEYS */;
+LOCK TABLES `admins` WRITE;
+/*!40000 ALTER TABLE `admins` DISABLE KEYS */;
+INSERT INTO `admins` VALUES (1,'Admin','Java','Admin');
+/*!40000 ALTER TABLE `admins` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-03-28 18:06:31
+-- Dump completed on 2024-03-28 20:24:21
