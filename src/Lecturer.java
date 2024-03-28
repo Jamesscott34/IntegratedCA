@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 public class Lecturer {
     private static Scanner input = new Scanner(System.in);
+    private static final String REPORTS_FOLDER = "reports";
 
     public static void ChangeUserName() {
         // Prompt the admin to enter the new username
@@ -141,8 +142,14 @@ public class Lecturer {
     }
 
 
-    private static void writeCSVReportToFile(ResultSet resultSet, Path filePath) {
-        try (FileWriter writer = new FileWriter(filePath.toFile())) {
+    public static void writeCSVReportToFile(ResultSet resultSet, Path filePath) {
+        // Create the reports folder if it doesn't exist
+        createReportsFolder();
+
+        // Append the file name to the reports folder path
+        Path reportFilePath = Paths.get(REPORTS_FOLDER, filePath.getFileName().toString());
+
+        try (FileWriter writer = new FileWriter(reportFilePath.toFile())) {
             writer.write("Student Name, Course Name, Grade, Lecturer Feedback\n");
             while (resultSet.next()) {
                 String studentName = resultSet.getString("StudentName");
@@ -151,8 +158,21 @@ public class Lecturer {
                 String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
                 writer.write(studentName + ", " + courseName + ", " + grade + ", " + lecturerFeedback + "\n");
             }
+            System.out.println("CSV report saved successfully at: " + reportFilePath.toString());
         } catch (SQLException | IOException e) {
             System.err.println("Error writing CSV file: " + e.getMessage());
+        }
+    }
+
+    private static void createReportsFolder() {
+        Path folderPath = Paths.get(REPORTS_FOLDER);
+        if (!Files.exists(folderPath)) {
+            try {
+                Files.createDirectories(folderPath);
+                System.out.println("Reports folder created at: " + folderPath.toAbsolutePath());
+            } catch (IOException e) {
+                System.err.println("Error creating reports folder: " + e.getMessage());
+            }
         }
     }
 
