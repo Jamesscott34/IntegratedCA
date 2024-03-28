@@ -1,14 +1,16 @@
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.sql.*;
 
 public class Menu {
     private static Scanner input;
     private static UserRole currentUserRole;
-    private String loggedInUsername;
+    private static String loggedInUsername;
 
     public Menu() {
         this.input = new Scanner(System.in);
+
     }
 
     public enum UserRole {
@@ -152,13 +154,13 @@ public class Menu {
 
         switch (tableChoice) {
             case 1:
-                deleteFromTable("Lecturer");
+                Admin.deleteFromTable("Lecturer", scanner);
                 break;
             case 2:
-                deleteFromTable("Office");
+                Admin.deleteFromTable("Office", scanner);
                 break;
             case 3:
-                deleteFromTable("Admin");
+                Admin.deleteFromTable("Admin", scanner);
                 break;
             default:
                 System.out.println("Invalid table choice.");
@@ -166,22 +168,11 @@ public class Menu {
         }
     }
 
-    private static void deleteFromTable(String tableName) {
-        // Fetch users from the specified table
-        List<User> users = Admin.getUsersFromDatabase(tableName);
-
-        // Display users
-        System.out.println("Users in " + tableName + " table:");
-        for (User user : users) {
-            System.out.println("Username: " + user.getUsername() + ", Role: " + user.getRole());
-        }
-
-        // Implement logic to delete user from specified table
-        System.out.println("Deleting user from " + tableName + " table...");
-    }
 
 
-    private static int getIntInput(Scanner scanner) {
+
+
+    static int getIntInput(Scanner scanner) {
         while (true) {
             try {
                 System.out.print("Enter your choice: ");
@@ -226,6 +217,7 @@ public class Menu {
         System.out.println("1. Admin");
         System.out.println("2. Lecturer");
         System.out.println("3. Office");
+        System.out.println("4. Quit");
         System.out.print("Enter the corresponding number: ");
         int roleChoice = scanner.nextInt();
 
@@ -240,22 +232,35 @@ public class Menu {
             case 3:
                 userRole = UserRole.OFFICE;
                 break;
+            case 4:
+                System.out.println("You have now logged out of the programme ...... Goodbye");
+                System.exit(0);
             default:
                 System.out.println("Invalid role choice.");
                 return false;
         }
 
-        boolean loggedIn = authenticateUser(userRole);
+//        boolean loggedIn = authenticateUser(userRole);
+        String username = authenticateUser(userRole);
+        if(username != null) {
+            loggedInUsername = username;
+        }
 
-        if (loggedIn) {
+        if (username != null) {
             displayUserMenu(userRole);
             handleUserMenu(userRole);
         }
 
-        return loggedIn;
+        return username != null;
+//        return loggedIn;
     }
 
-    private boolean authenticateUser(UserRole userRole) {
+    /**
+     * Authenticates a user
+     * @param userRole
+     * @return the username if successfully authenticated, or null otherwise
+     */
+    private String authenticateUser(UserRole userRole) {
         String username = getStringInput("Enter username");
         String password = getStringInput("Enter password");
 
@@ -272,7 +277,7 @@ public class Menu {
                 break;
             default:
                 System.out.println("Invalid role.");
-                return false;
+                return username;
         }
 
         try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
@@ -282,13 +287,19 @@ public class Menu {
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     int count = resultSet.getInt(1);
-                    return count > 0;
+
+                    if (count > 0) {
+                        return username;
+                    } else {
+                        return null;
+                    }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+//        return false;
+        return null;
     }
 
     private void handleUserMenu(UserRole role) {
@@ -318,33 +329,165 @@ public class Menu {
     private void handleOfficeMenu(int choice) {
         switch (choice) {
             case 1:
+                generateOfficeReport();
                 System.out.println("Generating Reports...");
                 break;
             case 2:
-                System.out.println("Changing Password...");
+                Office.ChangeUserName();
+                System.out.println("Changing Username...");
                 break;
             case 3:
-                System.out.println("Logging out...");
+                Office.changePassword();
+                System.out.println("Changing Password...");
+                break;
+            case 4:
+                loginUser();
                 break;
             default:
                 System.out.println("Invalid choice. Please try again.");
         }
     }
 
+    public static void generateLecturerReport() {
+        // Display options to the user
+        System.out.println("How would you like to save the report?");
+        System.out.println("1. Save to CSV");
+        System.out.println("2. Save to TXT");
+        System.out.println("3. Print to Console");
+        System.out.print("Enter your choice: ");
+
+        // Get user's choice
+        int choice = getIntInput();
+
+        switch (choice) {
+            case 1:
+                Lecturer.createCSVReport(loggedInUsername);
+                break;
+            case 2:
+                Lecturer.createTXTReport(loggedInUsername);
+                break;
+            case 3:
+                Lecturer.printToConsole(loggedInUsername);
+                break;
+            default:
+                System.out.println("Invalid choice.");
+                break;
+        }
+    }
+
+    public static void generateOfficeReport() {
+        // Display options to the user
+        System.out.println("What report would you like to view?");
+        System.out.println("1. Office Report");
+        System.out.println("2. Lecturer Report");
+        System.out.print("Enter your choice: ");
+
+        // Get user's choice for the type of report
+        int reportChoice = getIntInput();
+
+        switch (reportChoice) {
+            case 1:
+                generateOfficeSpecificReport();
+                break;
+            case 2:
+                generateLecturerReport(); // Call the method from Lecturer class
+                break;
+            default:
+                System.out.println("Invalid choice.");
+                break;
+        }
+    }
+
+    public static void generateOfficeSpecificReport() {
+        // Display options to the user
+        System.out.println("Select the lecturer for the report:");
+
+        // Fetch list of lecturers from the database
+        java.util.List<String> lecturers = getLecturers();
+
+        // Display the list of lecturers
+        for (int i = 0; i < lecturers.size(); i++) {
+            System.out.println((i + 1) + ". " + lecturers.get(i));
+        }
+
+        // Get user's choice for the lecturer
+        int lecturerChoice = getIntInput();
+
+        // Get user's choice for saving the office report
+        System.out.println("How would you like to save the office report?");
+        System.out.println("1. Save to CSV");
+        System.out.println("2. Save to TXT");
+        System.out.println("3. Print to Console");
+        System.out.print("Enter your choice: ");
+        int reportChoice = getIntInput();
+
+        // Get the selected lecturer name
+        String selectedLecturer = lecturers.get(lecturerChoice - 1);
+
+        // Generate the report based on user's choices
+        switch (reportChoice) {
+            case 1:
+                Office.createCSVReport(selectedLecturer);
+                break;
+            case 2:
+                Office.createTXTReport(selectedLecturer);
+                break;
+            case 3:
+                Office.printToConsole(selectedLecturer);
+                break;
+            default:
+                System.out.println("Invalid choice.");
+                break;
+        }
+    }
+
+    private static java.util.List<String> getLecturers() {
+        java.util.List<String> lecturers = new java.util.ArrayList<>();
+        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
+        String username = "root";
+        String password = "Alison12@";
+        String sql = "SELECT LecturerName FROM Lecturer";
+
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                lecturers.add(resultSet.getString("LecturerName"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Database error: " + e.getMessage());
+        }
+
+        return lecturers;
+    }
+
+
+
     private void handleLecturerMenu(int choice) {
         switch (choice) {
             case 1:
+                generateLecturerReport();
                 System.out.println("Generating Report...");
                 break;
             case 2:
-                System.out.println("Changing Password...");
+                Lecturer.ChangeUserName();
+                System.out.println("Changing UserName..");
                 break;
             case 3:
-                System.out.println("Logging out...");
+                Lecturer.changePassword();
+                System.out.println("Changing Password");
+
+                break;
+            case 4:
+                loginUser();
                 break;
             default:
                 System.out.println("Invalid choice. Please try again.");
         }
+    }
+
+    private void generateReports() {
     }
 
     public static void displayUserMenu(UserRole role) {
@@ -356,25 +499,27 @@ public class Menu {
                 System.out.println("3. Delete User");
                 System.out.println("4. Change Password");
                 System.out.println("5. Display users");
-                System.out.println("6. Logout");
+                System.out.println("6. Change User");
                 break;
             case OFFICE:
                 System.out.println("Office Menu:");
                 System.out.println("1. Generate Reports");
-                System.out.println("2. Change Password");
-                System.out.println("3. Logout");
+                System.out.println("2. Change user Name");
+                System.out.println("3. Change Password");
+                System.out.println("4. Logout");
                 break;
             case LECTURER:
                 System.out.println("Lecturer Menu:");
-                System.out.println("1. Generate Report");
-                System.out.println("2. Change Password");
-                System.out.println("3. Logout");
+                System.out.println("1. Generate Reports");
+                System.out.println("2. Change user Name");
+                System.out.println("3. Change Password");
+                System.out.println("4. Logout");
                 break;
         }
     }
 
     // Get integer input from the user
-    private int getIntInput() {
+    private static int getIntInput() {
         while (true) {
             try {
                 System.out.print("Enter your choice: ");
