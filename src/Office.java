@@ -22,4 +22,19 @@ public class Office {
             System.out.println("Failed to update admin username.");
         }
     }
+    public static void changePassword() {
+        // Prompt the admin to enter the new password
+        System.out.print("Enter the new password: ");
+        String newPassword = input.nextLine();
+
+        // Update the password in the database
+        boolean updated = updatePasswordInDatabase(newPassword);
+
+        if (updated) {
+            System.out.println("Admin password updated successfully.");
+        } else {
+            System.out.println("Failed to update admin password.");
+        }
+    }
+
 }
