@@ -225,6 +225,9 @@ public class Lecturer {
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
+            // Save the SQL query to a string variable
+            String executedQuery = statement.toString();
+
             statement.setString(1, lecturerName);
             statement.setString(2, selectedStudent);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -236,6 +239,9 @@ public class Lecturer {
                     printToConsole(resultSet);
                 }
             }
+
+            // Output the executed SQL query
+            System.out.println("Executed SQL query: " + executedQuery);
         } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
