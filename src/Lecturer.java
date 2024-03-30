@@ -172,7 +172,7 @@ public class Lecturer {
                 "INNER JOIN Grades ON Students.StudentID = Grades.StudentID " +
                 "INNER JOIN Programmes ON Students.ProgrammeID = Programmes.ProgrammeID " +
                 "INNER JOIN LecturerFeedback ON Students.StudentID = LecturerFeedback.StudentID " +
-                "INNER JOIN Lecturer ON LecturerFeedback.LecturerID = Lecturer.LecturerID " +
+                "INNER JOIN Lecturer ON LecturerFeedback.LecturerID = Lecturer.Lecturer_id " +
                 "WHERE Lecturer.Username = ? AND Students.StudentName = ?";
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
