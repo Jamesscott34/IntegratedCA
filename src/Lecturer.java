@@ -11,6 +11,11 @@ public class Lecturer {
     private static Scanner input = new Scanner(System.in);
     private static final String REPORTS_FOLDER = "reports";
 
+    /**
+     * Allows the admin to change their username.
+     * Prompts the admin to enter the new username and updates it in the database.
+     * Prints a success message if the username is updated successfully, otherwise prints a failure message.
+     */
     public static void ChangeUserName() {
         // Prompt the admin to enter the new username
         System.out.print("Enter the new username: ");
@@ -26,6 +31,11 @@ public class Lecturer {
         }
     }
 
+    /**
+     * Allows the admin to change their password.
+     * Prompts the admin to enter the new password and updates it in the database.
+     * Prints a success message if the password is updated successfully, otherwise prints a failure message.
+     */
     public static void changePassword() {
         // Prompt the admin to enter the new password
         System.out.print("Enter the new password: ");
@@ -40,6 +50,7 @@ public class Lecturer {
             System.out.println("Failed to update admin password.");
         }
     }
+
 
     private static boolean updateUserInDatabase(String newUsername) {
         Connection conn = null;
