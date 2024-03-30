@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -13,7 +15,9 @@ import java.util.Scanner;
  */
 public class Lecturer {
     private static Scanner input = new Scanner(System.in);
-    private static final String REPORTS_FOLDER = "reports";
+    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/management";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "Alison12@";
 
     /**
      * Allows the admin to change their username.
@@ -69,7 +73,7 @@ public class Lecturer {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
 
             // Prepare SQL query to update username
             String sql = "UPDATE LECTURER SET username = ? WHERE role = ?";
@@ -112,7 +116,7 @@ public class Lecturer {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
 
             // Prepare SQL query to update password
             String sql = "UPDATE LECTURER SET password = ? WHERE role = ?";
@@ -142,202 +146,181 @@ public class Lecturer {
         return updated;
     }
 
-    /**
-     * Generates a CSV report for a lecturer containing student names, course names, grades, and lecturer feedback.
-     * Retrieves data from the database based on the provided lecturer's username and writes it to a CSV file.
-     *
-     * @param lecturerName The username of the lecturer for whom the report is generated.
-     */
-    public static void createCSVReport(String lecturerName) {
-        // Database connection parameters
-        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
-        String username = "root";
-        String password = "Alison12@";
 
-        // SQL query to retrieve report data
-        String sql = "SELECT Students.StudentName, Courses.CourseName, Grades.Grade, Lecturerreports.LecturerFeedbackText " +
-                "FROM Lecturerreports " +
-                "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
-                "INNER JOIN Courses ON Lecturerreports.CourseID = Courses.CourseID " +
-                "INNER JOIN Grades ON Lecturerreports.EnrollmentID = Grades.EnrollmentID " +
-                "INNER JOIN Lecturer ON Lecturerreports.LecturerID = Lecturer.Lecturer_id " +
-                "WHERE Lecturer.username = ?";
 
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+    public static void generateReport(String lecturerName, String outputFormat) {
+        List<String> students = getStudentsForLecturer(lecturerName);
+
+        if (students.isEmpty()) {
+            System.out.println("No students found for the lecturer.");
+            return;
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Select a student:");
+        for (int i = 0; i < students.size(); i++) {
+            System.out.println((i + 1) + ". " + students.get(i));
+        }
+        System.out.print("Enter the number of the student: ");
+        int choice = scanner.nextInt();
+
+        String selectedStudent = students.get(choice - 1);
+
+        String sql = "SELECT Students.StudentName, Programmes.ProgrammeName, Grades.Grade, LecturerFeedback.LecturerFeedbackText " +
+                "FROM Students " +
+                "INNER JOIN Grades ON Students.StudentID = Grades.StudentID " +
+                "INNER JOIN Programmes ON Students.ProgrammeID = Programmes.ProgrammeID " +
+                "INNER JOIN LecturerFeedback ON Students.StudentID = LecturerFeedback.StudentID " +
+                "INNER JOIN Lecturer ON LecturerFeedback.LecturerID = Lecturer.LecturerID " +
+                "WHERE Lecturer.Username = ? AND Students.StudentName = ?";
+
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
+            statement.setString(2, selectedStudent);
             try (ResultSet resultSet = statement.executeQuery()) {
-                // Define the file path for the CSV report
-                Path filePath = Paths.get("reports/" + lecturerName + ".csv");
-                // Write the result set data to the CSV file
-                writeCSVReportToFile(resultSet, filePath);
+                if ("csv".equalsIgnoreCase(outputFormat)) {
+                    saveToCSV(resultSet, lecturerName);
+                } else if ("txt".equalsIgnoreCase(outputFormat)) {
+                    saveToTXT(resultSet, lecturerName);
+                } else {
+                    printToConsole(resultSet);
+                }
             }
-            System.out.println("CSV report generated successfully!");
-        } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Writes the data from the ResultSet to a CSV file.
-     *
-     * @param resultSet The ResultSet containing the data to be written.
-     * @param filePath   The path to the CSV file where the data will be written.
-     */
-    public static void writeCSVReportToFile(ResultSet resultSet, Path filePath) {
-        // Create the reports folder if it doesn't exist
-        createReportsFolder();
-
-        // Append the file name to the reports folder path
-        Path reportFilePath = Paths.get(REPORTS_FOLDER, filePath.getFileName().toString());
-
-        try (FileWriter writer = new FileWriter(reportFilePath.toFile())) {
-            // Write the CSV header
-            writer.write("Student Name, Course Name, Grade, Lecturer Feedback\n");
-            // Write data for each row in the ResultSet
-            while (resultSet.next()) {
-                String studentName = resultSet.getString("StudentName");
-                String courseName = resultSet.getString("CourseName");
-                double grade = resultSet.getDouble("Grade");
-                String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
-                // Write data for each row to the CSV file
-                writer.write(studentName + ", " + courseName + ", " + grade + ", " + lecturerFeedback + "\n");
-            }
-            System.out.println("CSV report saved successfully at: " + reportFilePath.toString());
         } catch (SQLException | IOException e) {
-            System.err.println("Error writing CSV file: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Creates a folder named "reports" if it does not exist.
-     * This folder is used for storing generated reports.
-     */
-    private static void createReportsFolder() {
-        Path folderPath = Paths.get(REPORTS_FOLDER);
-        if (!Files.exists(folderPath)) {
-            try {
-                Files.createDirectories(folderPath);
-                System.out.println("Reports folder created at: " + folderPath.toAbsolutePath());
-            } catch (IOException e) {
-                System.err.println("Error creating reports folder: " + e.getMessage());
-            }
+
+    public static List<String> getStudentsForLecturer(String lecturerName) {
+        List<String> students = new ArrayList<>();
+
+        // Get the programme associated with the lecturer
+        String programmeName = getProgrammeForLecturer(lecturerName);
+
+        // If no programme found, return empty list
+        if (programmeName == null) {
+            return students;
         }
+
+        // Get students for the lecturer's programme
+        String lecturerForProgramme = getLecturerForProgramme(programmeName);
+        if (lecturerForProgramme != null && lecturerForProgramme.equals(lecturerName)) {
+            // Retrieve students enrolled in the lecturer's programme
+            students = getStudentsForProgramme(programmeName);
+        }
+
+        return students;
     }
 
-    /**
-     * Generates a TXT report for a lecturer containing student names, course names, grades, and lecturer feedback.
-     * Retrieves data from the database based on the provided lecturer's name and writes it to a TXT file.
-     *
-     * @param lecturerName The name of the lecturer for whom the report is generated.
-     */
-    public static void createTXTReport(String lecturerName) {
-        // Database connection parameters
-        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
-        String username = "root";
-        String password = "Alison12@";
+    private static String getProgrammeForLecturer(String lecturerName) {
+        String programmeName = null;
+        String sql = "SELECT Programmes.ProgrammeName " +
+                "FROM Courses " +
+                "INNER JOIN Lecturer ON Courses.LecturerID = Lecturer.Lecturer_id " +
+                "INNER JOIN Programmes ON Courses.ProgrammeID = Programmes.ProgrammeID " +
+                "WHERE Lecturer.Username = ?";
 
-        // SQL query to retrieve report data
-        String sql = "SELECT Students.StudentName, Courses.CourseName, Grades.Grade, Lecturerreports.LecturerFeedbackText " +
-                "FROM Lecturerreports " +
-                "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
-                "INNER JOIN Courses ON Lecturerreports.CourseID = Courses.CourseID " +
-                "INNER JOIN Grades ON Lecturerreports.EnrollmentID = Grades.EnrollmentID " +
-                "WHERE Lecturerreports.LecturerID = (SELECT Lecturer_id FROM Lecturer WHERE LecturerName = ?)";
-
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             try (ResultSet resultSet = statement.executeQuery()) {
-                // Define the file path for the TXT report
-                Path filePath = Paths.get("reports/" + lecturerName + ".txt");
-                // Write the result set data to the TXT file
-                writeTXTReportToFile(resultSet, filePath);
+                if (resultSet.next()) {
+                    programmeName = resultSet.getString("ProgrammeName");
+                }
             }
-            System.out.println("TXT report generated successfully!");
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        return programmeName;
     }
 
-    /**
-     * Prints a report for a lecturer to the console.
-     * Retrieves data from the database based on the provided lecturer's name and prints it to the console.
-     *
-     * @param lecturerName The name of the lecturer for whom the report is printed.
-     */
-    public static void printToConsole(String lecturerName) {
-        // Database connection parameters
-        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
-        String username = "root";
-        String password = "Alison12@";
+    private static List<String> getStudentsForProgramme(String programmeName) {
+        List<String> students = new ArrayList<>();
+        String sql = "SELECT StudentName FROM Students WHERE ProgrammeID = " +
+                "(SELECT ProgrammeID FROM Programmes WHERE ProgrammeName = ?)";
 
-        // SQL query to retrieve report data
-        String sql = "SELECT Students.StudentName, Courses.CourseName, Grades.Grade, Lecturerreports.LecturerFeedbackText " +
-                "FROM Lecturerreports " +
-                "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
-                "INNER JOIN Courses ON Lecturerreports.CourseID = Courses.CourseID " +
-                "INNER JOIN Grades ON Lecturerreports.EnrollmentID = Grades.EnrollmentID " +
-                "WHERE Lecturerreports.LecturerID = (SELECT Lecturer_id FROM Lecturer WHERE LecturerName = ?)";
-
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, lecturerName);
+            statement.setString(1, programmeName);
             try (ResultSet resultSet = statement.executeQuery()) {
-                // Print the report to the console
-                printReportToConsole(resultSet);
+                while (resultSet.next()) {
+                    String studentName = resultSet.getString("StudentName");
+                    students.add(studentName);
+                }
             }
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        return students;
     }
 
-    /**
-     * Writes the data from the ResultSet to a TXT file.
-     *
-     * @param resultSet The ResultSet containing the data to be written.
-     * @param filePath   The path to the TXT file where the data will be written.
-     */
-    private static void writeTXTReportToFile(ResultSet resultSet, Path filePath) {
+    private static String getLecturerForProgramme(String programmeName) {
+        String lecturerName = null;
+        String sql = "SELECT Lecturer.Username " +
+                "FROM Courses " +
+                "INNER JOIN Lecturer ON Courses.LecturerID = Lecturer.Lecturer_id " +
+                "INNER JOIN Programmes ON Courses.ProgrammeID = Programmes.ProgrammeID " +
+                "WHERE Programmes.ProgrammeName = ?";
+
+        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, programmeName);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    lecturerName = resultSet.getString("Username");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return lecturerName;
+    }
+
+    private static void saveToCSV(ResultSet resultSet, String lecturerName) throws IOException, SQLException {
+        Path filePath = Paths.get("reports/" + lecturerName + ".csv");
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            // Write the TXT file header
-            writer.write("Student Name\tCourse Name\tGrade\tLecturer Feedback\n");
-            // Write data for each row in the ResultSet
+            writer.write("Student Name, Programme, Grade, Lecturer Feedback\n");
             while (resultSet.next()) {
                 String studentName = resultSet.getString("StudentName");
-                String courseName = resultSet.getString("CourseName");
+                String programmeName = resultSet.getString("ProgrammeName");
                 double grade = resultSet.getDouble("Grade");
                 String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
-                // Write data for each row to the TXT file
-                writer.write(studentName + "\t" + courseName + "\t" + grade + "\t" + lecturerFeedback + "\n");
+                writer.write(studentName + ", " + programmeName + ", " + grade + ", " + lecturerFeedback + "\n");
             }
-        } catch (SQLException | IOException e) {
-            System.err.println("Error writing TXT file: " + e.getMessage());
+            System.out.println("CSV report saved successfully at: " + filePath.toString());
         }
     }
 
-    /**
-     * Prints the report data from the ResultSet to the console.
-     *
-     * @param resultSet The ResultSet containing the report data.
-     */
-    private static void printReportToConsole(ResultSet resultSet) {
-        try {
-            // Iterate over the ResultSet and print each row to the console
+    private static void saveToTXT(ResultSet resultSet, String lecturerName) throws IOException, SQLException {
+        Path filePath = Paths.get("reports/" + lecturerName + ".txt");
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            writer.write("Student Name\tProgramme\tGrade\tLecturer Feedback\n");
             while (resultSet.next()) {
                 String studentName = resultSet.getString("StudentName");
-                String courseName = resultSet.getString("CourseName");
+                String programmeName = resultSet.getString("ProgrammeName");
                 double grade = resultSet.getDouble("Grade");
                 String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
-                // Print data for each row to the console
-                System.out.println("Student Name: " + studentName);
-                System.out.println("Course Name: " + courseName);
-                System.out.println("Grade: " + grade);
-                System.out.println("Lecturer Feedback: " + lecturerFeedback + "\n");
+                writer.write(studentName + "\t" + programmeName + "\t" + grade + "\t" + lecturerFeedback + "\n");
             }
-        } catch (SQLException e) {
-            System.err.println("Error printing report to console: " + e.getMessage());
+            System.out.println("TXT report saved successfully at: " + filePath.toString());
         }
     }
 
+    private static void printToConsole(ResultSet resultSet) throws SQLException {
+        while (resultSet.next()) {
+            String studentName = resultSet.getString("StudentName");
+            String programmeName = resultSet.getString("ProgrammeName");
+            double grade = resultSet.getDouble("Grade");
+            String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
+            System.out.println("Student Name: " + studentName);
+            System.out.println("Programme: " + programmeName);
+            System.out.println("Grade: " + grade);
+            System.out.println("Lecturer Feedback: " + lecturerFeedback + "\n");
+        }
+    }
 }
