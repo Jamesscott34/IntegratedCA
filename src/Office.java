@@ -5,11 +5,19 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Scanner;
 
+/**
+ * Represents the office functionality in a university system.
+ * This class provides methods for managing office-related tasks, such as updating usernames and passwords,
+ * generating reports, and printing reports to the console.
+ */
 public class Office {
     private static Scanner input = new Scanner(System.in);
 
+    /**
+     * Changes the username of an office user in the database.
+     * Prompts the user to enter the new username and updates it in the database.
+     */
     public static void ChangeUserName() {
-        // Prompt the admin to enter the new username
         System.out.print("Enter the new username: ");
         String newUsername = input.nextLine();
 
@@ -17,13 +25,17 @@ public class Office {
         boolean updated = updateUserInDatabase(newUsername);
 
         if (updated) {
-            System.out.println("Admin username updated successfully.");
+            System.out.println("Office username updated successfully.");
         } else {
-            System.out.println("Failed to update admin username.");
+            System.out.println("Failed to update office username.");
         }
     }
+
+    /**
+     * Changes the password of an office user in the database.
+     * Prompts the user to enter the new password and updates it in the database.
+     */
     public static void changePassword() {
-        // Prompt the admin to enter the new password
         System.out.print("Enter the new password: ");
         String newPassword = input.nextLine();
 
@@ -31,37 +43,38 @@ public class Office {
         boolean updated = updatePasswordInDatabase(newPassword);
 
         if (updated) {
-            System.out.println("Admin password updated successfully.");
+            System.out.println("Office password updated successfully.");
         } else {
-            System.out.println("Failed to update admin password.");
+            System.out.println("Failed to update office password.");
         }
     }
+
+    /**
+     * Updates the username of an office user in the database.
+     *
+     * @param newUsername The new username to be set for the office user.
+     * @return true if the username is updated successfully, false otherwise.
+     */
     private static boolean updateUserInDatabase(String newUsername) {
         Connection conn = null;
         PreparedStatement stmt = null;
         boolean updated = false;
 
         try {
-            // Establish connection to MySQL database
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
-
-            // Prepare SQL query to update username
             String sql = "UPDATE OFFICE SET username = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newUsername);
-            stmt.setString(2, "Office"); // Assuming 'ADMIN' is the role of the admin user
+            stmt.setString(2, "Office");
 
-            // Execute update
             int rowsAffected = stmt.executeUpdate();
 
-            // Check if update was successful
             if (rowsAffected > 0) {
                 updated = true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            // Close resources
             try {
                 if (stmt != null) stmt.close();
                 if (conn != null) conn.close();
@@ -72,32 +85,33 @@ public class Office {
 
         return updated;
     }
+
+    /**
+     * Updates the password of an office user in the database.
+     *
+     * @param newPassword The new password to be set for the office user.
+     * @return true if the password is updated successfully, false otherwise.
+     */
     private static boolean updatePasswordInDatabase(String newPassword) {
         Connection conn = null;
         PreparedStatement stmt = null;
         boolean updated = false;
 
         try {
-            // Establish connection to MySQL database
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
-
-            // Prepare SQL query to update password
             String sql = "UPDATE OFFICE SET password = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newPassword);
-            stmt.setString(2, "Office"); // Assuming 'ADMIN' is the role of the admin user
+            stmt.setString(2, "Office");
 
-            // Execute update
             int rowsAffected = stmt.executeUpdate();
 
-            // Check if update was successful
             if (rowsAffected > 0) {
                 updated = true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            // Close resources
             try {
                 if (stmt != null) stmt.close();
                 if (conn != null) conn.close();
@@ -108,6 +122,12 @@ public class Office {
 
         return updated;
     }
+
+    /**
+     * Generates a CSV report containing office data and writes it to a file.
+     *
+     * @param lecturerName The name of the lecturer for whom the report is generated.
+     */
     public static void createCSVReport(String lecturerName) {
         String jdbcUrl = "jdbc:mysql://localhost:3306/management";
         String username = "root";
@@ -131,6 +151,11 @@ public class Office {
         }
     }
 
+    /**
+     * Generates a TXT report containing office data and writes it to a file.
+     *
+     * @param lecturerName The name of the lecturer for whom the report is generated.
+     */
     public static void createTXTReport(String lecturerName) {
         String jdbcUrl = "jdbc:mysql://localhost:3306/management";
         String username = "root";
@@ -154,6 +179,11 @@ public class Office {
         }
     }
 
+    /**
+     * Prints office data to the console.
+     *
+     * @param lecturerName The name of the lecturer for whom the report is generated.
+     */
     public static void printToConsole(String lecturerName) {
         String jdbcUrl = "jdbc:mysql://localhost:3306/management";
         String username = "root";
@@ -168,7 +198,6 @@ public class Office {
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
-            // Printing to console
             while (resultSet.next()) {
                 String studentName = resultSet.getString("StudentName");
                 String courseName = resultSet.getString("CourseName");
@@ -190,6 +219,14 @@ public class Office {
         }
     }
 
+    /**
+     * Writes the office report data to a file.
+     *
+     * @param resultSet The result set containing the office report data.
+     * @param filePath  The path of the file where the report will be written.
+     * @throws IOException  If an I/O error occurs while writing to the file.
+     * @throws SQLException If a SQL error occurs while processing the result set.
+     */
     private static void writeReportToFile(ResultSet resultSet, Path filePath) throws IOException, SQLException {
         try (FileWriter writer = new FileWriter(filePath.toFile())) {
             writer.write("Student Name, Course Name, Grade, Lecturer Feedback, Student Feedback, Room\n");
@@ -208,5 +245,4 @@ public class Office {
             throw new RuntimeException(e);
         }
     }
-
 }
