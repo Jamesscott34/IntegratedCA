@@ -52,6 +52,12 @@ public class Lecturer {
     }
 
 
+    /**
+     * Updates the username of a lecturer in the database.
+     *
+     * @param newUsername The new username to be set for the lecturer.
+     * @return true if the username is updated successfully, false otherwise.
+     */
     private static boolean updateUserInDatabase(String newUsername) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -65,7 +71,7 @@ public class Lecturer {
             String sql = "UPDATE LECTURER SET username = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newUsername);
-            stmt.setString(2, "Lecturer"); // Assuming 'ADMIN' is the role of the admin user
+            stmt.setString(2, "Lecturer"); // Assuming 'Lecturer' is the role of the lecturer user
 
             // Execute update
             int rowsAffected = stmt.executeUpdate();
@@ -89,6 +95,12 @@ public class Lecturer {
         return updated;
     }
 
+    /**
+     * Updates the password of a lecturer in the database.
+     *
+     * @param newPassword The new password to be set for the lecturer.
+     * @return true if the password is updated successfully, false otherwise.
+     */
     private static boolean updatePasswordInDatabase(String newPassword) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -102,7 +114,7 @@ public class Lecturer {
             String sql = "UPDATE LECTURER SET password = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newPassword);
-            stmt.setString(2, "Lecturer"); // Assuming 'ADMIN' is the role of the admin user
+            stmt.setString(2, "Lecturer"); // Assuming 'Lecturer' is the role of the lecturer user
 
             // Execute update
             int rowsAffected = stmt.executeUpdate();
