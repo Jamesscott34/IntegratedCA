@@ -9,15 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static com.mysql.cj.conf.PropertyKey.PASSWORD;
+
 /**
  * Represents a lecturer in a college managment system.
  * This class provides functionality related to managing lecturer data and generating reports.
  */
 public class Lecturer {
+
     private static Scanner input = new Scanner(System.in);
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/management";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "Alison12@";
+
+
 
     /**
      * Allows the admin to change their username.
@@ -73,7 +75,7 @@ public class Lecturer {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
 
             // Prepare SQL query to update username
             String sql = "UPDATE LECTURER SET username = ? WHERE role = ?";
@@ -116,7 +118,7 @@ public class Lecturer {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
 
             // Prepare SQL query to update password
             String sql = "UPDATE LECTURER SET password = ? WHERE role = ?";
@@ -222,7 +224,7 @@ public class Lecturer {
                 "INNER JOIN Programmes ON Courses.ProgrammeID = Programmes.ProgrammeID " +
                 "WHERE Lecturer.Username = ?";
 
-        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -242,7 +244,7 @@ public class Lecturer {
         String sql = "SELECT StudentName FROM Students WHERE ProgrammeID = " +
                 "(SELECT ProgrammeID FROM Programmes WHERE ProgrammeName = ?)";
 
-        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, programmeName);
             try (ResultSet resultSet = statement.executeQuery()) {

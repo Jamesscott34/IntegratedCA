@@ -5,6 +5,8 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Scanner;
 
+import static com.mysql.cj.conf.PropertyKey.PASSWORD;
+
 /**
  * Represents the office functionality in a university system.
  * This class provides methods for managing office-related tasks, such as updating usernames and passwords,
@@ -12,6 +14,7 @@ import java.util.Scanner;
  */
 public class Office {
     private static Scanner input = new Scanner(System.in);
+
 
     /**
      * Changes the username of an office user in the database.
@@ -98,7 +101,7 @@ public class Office {
         boolean updated = false;
 
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
             String sql = "UPDATE OFFICE SET password = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newPassword);
@@ -129,16 +132,14 @@ public class Office {
      * @param lecturerName The name of the lecturer for whom the report is generated.
      */
     public static void createCSVReport(String lecturerName) {
-        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
-        String username = "root";
-        String password = "Alison12@";
+
 
         String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
                 "FROM Officereports " +
                 "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
                 "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
 
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
@@ -157,16 +158,14 @@ public class Office {
      * @param lecturerName The name of the lecturer for whom the report is generated.
      */
     public static void createTXTReport(String lecturerName) {
-        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
-        String username = "root";
-        String password = "Alison12@";
+
 
         String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
                 "FROM Officereports " +
                 "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
                 "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
 
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
@@ -185,16 +184,14 @@ public class Office {
      * @param lecturerName The name of the lecturer for whom the report is generated.
      */
     public static void printToConsole(String lecturerName) {
-        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
-        String username = "root";
-        String password = "Alison12@";
+
 
         String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
                 "FROM Officereports " +
                 "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
                 "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
 
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 

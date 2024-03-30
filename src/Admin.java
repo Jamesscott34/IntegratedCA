@@ -1,6 +1,8 @@
 import java.sql.*;
 import java.util.*;
 
+import static com.mysql.cj.conf.PropertyKey.PASSWORD;
+
 /**
 
  The Admin class provides functionalities related to administrative tasks in a management system.
@@ -23,7 +25,9 @@ import java.util.*;
 
 
 public class Admin {
+
     private static Scanner input = new Scanner(System.in);
+
 
 
     /**
@@ -60,7 +64,7 @@ public class Admin {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
 
             // Prepare SQL query to update username
             String sql = "UPDATE ADMINS SET username = ? WHERE role = ?";
@@ -101,7 +105,7 @@ public class Admin {
 
         // Execute the SQL query and retrieve the data from the database
         List<User> users = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@")) {
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD))) {
             try (Statement statement = connection.createStatement();
                  ResultSet resultSet = statement.executeQuery(sqlQuery)) {
                 while (resultSet.next()) {
@@ -165,7 +169,7 @@ public class Admin {
 
         try {
             // Establish connection to the database
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
 
             // Prepare SQL statement to update password
             String sql = "UPDATE ADMINS SET password = ? WHERE username = ?";
