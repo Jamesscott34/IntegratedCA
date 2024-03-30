@@ -283,7 +283,19 @@ public class Lecturer {
     }
 
     private static void saveToCSV(ResultSet resultSet, String lecturerName) throws IOException, SQLException {
-        Path filePath = Paths.get("reports/" + lecturerName + ".csv");
+        Path directoryPath = Paths.get("reports");
+        Path filePath = directoryPath.resolve(lecturerName + ".csv");
+
+        // Create the 'reports' directory if it doesn't exist
+        if (!Files.exists(directoryPath)) {
+            try {
+                Files.createDirectories(directoryPath);
+            } catch (IOException e) {
+                System.err.println("Failed to create the 'reports' directory: " + e.getMessage());
+                return;
+            }
+        }
+
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
             writer.write("Student Name, Programme, Grade, Lecturer Feedback\n");
             while (resultSet.next()) {
