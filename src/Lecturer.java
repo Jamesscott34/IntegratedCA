@@ -138,11 +138,19 @@ public class Lecturer {
         return updated;
     }
 
+    /**
+     * Generates a CSV report for a lecturer containing student names, course names, grades, and lecturer feedback.
+     * Retrieves data from the database based on the provided lecturer's username and writes it to a CSV file.
+     *
+     * @param lecturerName The username of the lecturer for whom the report is generated.
+     */
     public static void createCSVReport(String lecturerName) {
+        // Database connection parameters
         String jdbcUrl = "jdbc:mysql://localhost:3306/management";
         String username = "root";
         String password = "Alison12@";
 
+        // SQL query to retrieve report data
         String sql = "SELECT Students.StudentName, Courses.CourseName, Grades.Grade, Lecturerreports.LecturerFeedbackText " +
                 "FROM Lecturerreports " +
                 "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
@@ -155,7 +163,9 @@ public class Lecturer {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             try (ResultSet resultSet = statement.executeQuery()) {
+                // Define the file path for the CSV report
                 Path filePath = Paths.get("reports/" + lecturerName + ".csv");
+                // Write the result set data to the CSV file
                 writeCSVReportToFile(resultSet, filePath);
             }
             System.out.println("CSV report generated successfully!");
@@ -164,7 +174,12 @@ public class Lecturer {
         }
     }
 
-
+    /**
+     * Writes the data from the ResultSet to a CSV file.
+     *
+     * @param resultSet The ResultSet containing the data to be written.
+     * @param filePath   The path to the CSV file where the data will be written.
+     */
     public static void writeCSVReportToFile(ResultSet resultSet, Path filePath) {
         // Create the reports folder if it doesn't exist
         createReportsFolder();
@@ -173,12 +188,15 @@ public class Lecturer {
         Path reportFilePath = Paths.get(REPORTS_FOLDER, filePath.getFileName().toString());
 
         try (FileWriter writer = new FileWriter(reportFilePath.toFile())) {
+            // Write the CSV header
             writer.write("Student Name, Course Name, Grade, Lecturer Feedback\n");
+            // Write data for each row in the ResultSet
             while (resultSet.next()) {
                 String studentName = resultSet.getString("StudentName");
                 String courseName = resultSet.getString("CourseName");
                 double grade = resultSet.getDouble("Grade");
                 String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
+                // Write data for each row to the CSV file
                 writer.write(studentName + ", " + courseName + ", " + grade + ", " + lecturerFeedback + "\n");
             }
             System.out.println("CSV report saved successfully at: " + reportFilePath.toString());
