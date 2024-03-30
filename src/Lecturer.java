@@ -1,5 +1,4 @@
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -176,7 +175,7 @@ public class Lecturer {
                 "INNER JOIN Lecturer ON LecturerFeedback.LecturerID = Lecturer.LecturerID " +
                 "WHERE Lecturer.Username = ? AND Students.StudentName = ?";
 
-        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             statement.setString(2, selectedStudent);
@@ -268,7 +267,7 @@ public class Lecturer {
                 "INNER JOIN Programmes ON Courses.ProgrammeID = Programmes.ProgrammeID " +
                 "WHERE Programmes.ProgrammeName = ?";
 
-        try (Connection connection = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, programmeName);
             try (ResultSet resultSet = statement.executeQuery()) {

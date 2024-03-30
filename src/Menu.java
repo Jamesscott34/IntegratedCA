@@ -3,10 +3,14 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.sql.*;
 
+import static com.mysql.cj.conf.PropertyKey.PASSWORD;
+
 public class Menu {
     private static Scanner input;
     private static UserRole currentUserRole;
     private static String loggedInUsername;
+
+
 
     public Menu() {
         this.input = new Scanner(System.in);
@@ -361,13 +365,13 @@ public class Menu {
 
         switch (choice) {
             case 1:
-                Lecturer.createCSVReport(loggedInUsername);
+                Lecturer.generateReport(loggedInUsername, "CSV");
                 break;
             case 2:
-                Lecturer.createTXTReport(loggedInUsername);
+                Lecturer.generateReport(loggedInUsername, "TXT");
                 break;
             case 3:
-                Lecturer.printToConsole(loggedInUsername);
+                Lecturer.generateReport(loggedInUsername, "console");
                 break;
             default:
                 System.out.println("Invalid choice.");
@@ -390,7 +394,7 @@ public class Menu {
                 generateOfficeSpecificReport();
                 break;
             case 2:
-                generateLecturerReport(); // Call the method from Lecturer class
+                // Call the method from Lecturer class
                 break;
             default:
                 System.out.println("Invalid choice.");
@@ -443,12 +447,10 @@ public class Menu {
 
     private static java.util.List<String> getLecturers() {
         java.util.List<String> lecturers = new java.util.ArrayList<>();
-        String jdbcUrl = "jdbc:mysql://localhost:3306/management";
-        String username = "root";
-        String password = "Alison12@";
+
         String sql = "SELECT LecturerName FROM Lecturer";
 
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
@@ -487,8 +489,7 @@ public class Menu {
         }
     }
 
-    private void generateReports() {
-    }
+
 
     public static void displayUserMenu(UserRole role) {
         switch (role) {

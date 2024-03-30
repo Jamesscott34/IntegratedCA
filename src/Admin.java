@@ -169,7 +169,7 @@ public class Admin {
 
         try {
             // Establish connection to the database
-            conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
 
             // Prepare SQL statement to update password
             String sql = "UPDATE ADMINS SET password = ? WHERE username = ?";

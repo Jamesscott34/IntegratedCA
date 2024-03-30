@@ -64,7 +64,7 @@ public class Office {
         boolean updated = false;
 
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
             String sql = "UPDATE OFFICE SET username = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newUsername);
