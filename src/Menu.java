@@ -294,7 +294,6 @@ public class Menu {
 
     /**
      * Authenticates a user
-     * @param userRole
      * @return the username if successfully authenticated, or null otherwise
      */
     private String authenticateUser(UserRole userRole) {
@@ -463,48 +462,13 @@ public class Menu {
      * Generates the report using the specified lecturer name and output format.
      */
     private static void generatLecturerSpecificReport() {
-        String lecturerName = getLecturerName();
-        String outputFormat = getOutputFormat();
+        String lecturerName = Lecturer.getLecturerName();
+        String outputFormat = Lecturer.getOutputFormat();
 
         if (outputFormat.equals("txt") || outputFormat.equals("csv") || outputFormat.equals("terminal")) {
             Lecturer.generateReport(lecturerName, outputFormat);
         } else {
             System.out.println("Invalid output format.");
-        }
-    }
-
-    /**
-     * Prompts the user to enter the name of the lecturer for the report.
-     *
-     * @return The name of the lecturer entered by the user.
-     */
-    private static String getLecturerName() {
-        System.out.print("Enter the lecturer's name: ");
-        return input.nextLine();
-    }
-
-    /**
-     * Prompts the user to choose the output format for the report (text, CSV, or terminal).
-     *
-     * @return The chosen output format.
-     */
-    private static String getOutputFormat() {
-        System.out.println("Choose the output format:");
-        System.out.println("1. Text");
-        System.out.println("2. CSV");
-        System.out.println("3. Terminal");
-
-        int choice = getIntInput();
-
-        switch (choice) {
-            case 1:
-                return "txt";
-            case 2:
-                return "csv";
-            case 3:
-                return "terminal";
-            default:
-                return "invalid";
         }
     }
 
@@ -566,14 +530,14 @@ public class Menu {
     private static List<String> getLecturers() {
         List<String> lecturers = new ArrayList<>();
 
-        String sql = "SELECT LecturerName FROM Lecturer";
+        String sql = "SELECT username FROM LECTURER"; // Modify the column name to 'username'
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                lecturers.add(resultSet.getString("LecturerName"));
+                lecturers.add(resultSet.getString("username")); // Retrieve usernames from the result set
             }
         } catch (SQLException e) {
             System.err.println("Database error: " + e.getMessage());

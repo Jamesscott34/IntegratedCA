@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static com.mysql.cj.conf.PropertyKey.PASSWORD;
 
 
 /**
@@ -149,6 +150,55 @@ public class Lecturer {
 
 
 
+    private static void generateLecturerSpecificReport() {
+        String lecturerName = getLecturerName();
+        String outputFormat = getOutputFormat();
+
+        if ("txt".equalsIgnoreCase(outputFormat) || "csv".equalsIgnoreCase(outputFormat) || "terminal".equalsIgnoreCase(outputFormat)) {
+            generateReport(lecturerName, outputFormat);
+        } else {
+            System.out.println("Invalid output format.");
+        }
+    }
+
+    static String getLecturerName() {
+        Scanner input = new Scanner(System.in);
+        System.out.print("Enter the lecturer's name: ");
+        return input.nextLine();
+    }
+
+    static String getOutputFormat() {
+        Scanner input = new Scanner(System.in);
+        System.out.println("Choose the output format:");
+        System.out.println("1. Text");
+        System.out.println("2. CSV");
+        System.out.println("3. Terminal");
+
+        int choice = getIntInput(input);
+
+        switch (choice) {
+            case 1:
+                return "txt";
+            case 2:
+                return "csv";
+            case 3:
+                return "terminal";
+            default:
+                return "invalid";
+        }
+    }
+
+    private static int getIntInput(Scanner input) {
+        while (true) {
+            try {
+                System.out.print("Enter your choice: ");
+                return Integer.parseInt(input.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
+        }
+    }
+
     public static void generateReport(String lecturerName, String outputFormat) {
         List<String> students = getStudentsForLecturer(lecturerName);
 
@@ -167,13 +217,11 @@ public class Lecturer {
 
         String selectedStudent = students.get(choice - 1);
 
-        String sql = "SELECT Students.StudentName, Programmes.ProgrammeName, Grades.Grade, LecturerFeedback.LecturerFeedbackText " +
-                "FROM Students " +
-                "INNER JOIN Grades ON Students.StudentID = Grades.StudentID " +
-                "INNER JOIN Programmes ON Students.ProgrammeID = Programmes.ProgrammeID " +
-                "INNER JOIN LecturerFeedback ON Students.StudentID = LecturerFeedback.StudentID " +
-                "INNER JOIN Lecturer ON LecturerFeedback.LecturerID = Lecturer.Lecturer_id " +
-                "WHERE Lecturer.Username = ? AND Students.StudentName = ?";
+        String sql = "SELECT Lecturerreports.StudentName, Lecturerreports.Grade, Lecturerreports.LecturerFeedbackText " +
+                "FROM Lecturerreports " +
+                "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
+                "WHERE Lecturerreports.LecturerID = (SELECT LecturerID FROM Lecturer WHERE Username = ?) " +
+                "AND Lecturerreports.StudentName = ?";
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -336,4 +384,5 @@ public class Lecturer {
             System.out.println("Lecturer Feedback: " + lecturerFeedback + "\n");
         }
     }
+
 }
