@@ -223,25 +223,33 @@ public class Lecturer {
                 "WHERE Lecturerreports.LecturerID = (SELECT LecturerID FROM Lecturer WHERE Username = ?) " +
                 "AND Lecturerreports.StudentName = ?";
 
+        // List to store the reports
+        List<StudentReport> studentReports = new ArrayList<>();
+
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            // Save the SQL query to a string variable
-            String executedQuery = statement.toString();
-
             statement.setString(1, lecturerName);
             statement.setString(2, selectedStudent);
+
+            // Execute the query
             try (ResultSet resultSet = statement.executeQuery()) {
-                if ("csv".equalsIgnoreCase(outputFormat)) {
-                    saveToCSV(resultSet, lecturerName);
-                } else if ("txt".equalsIgnoreCase(outputFormat)) {
-                    saveToTXT(resultSet, lecturerName);
-                } else {
-                    printToConsole(resultSet);
+                // Populate the list with the results
+                while (resultSet.next()) {
+                    String studentName = resultSet.getString("StudentName");
+                    double grade = resultSet.getDouble("Grade");
+                    String feedbackText = resultSet.getString("LecturerFeedbackText");
+                    studentReports.add(new StudentReport(studentName, grade, feedbackText));
                 }
             }
 
-            // Output the executed SQL query
-            System.out.println("Executed SQL query: " + executedQuery);
+            // Process the list based on the output format
+            if ("csv".equalsIgnoreCase(outputFormat)) {
+                saveToCSV(studentReports, lecturerName);
+            } else if ("txt".equalsIgnoreCase(outputFormat)) {
+                saveToTXT(studentReports, lecturerName);
+            } else {
+                printToConsole(studentReports);
+            }
         } catch (SQLException | IOException e) {
             e.printStackTrace();
         }
@@ -336,7 +344,7 @@ public class Lecturer {
         return lecturerName;
     }
 
-    private static void saveToCSV(ResultSet resultSet, String lecturerName) throws IOException, SQLException {
+    private static void saveToCSV(List<StudentReport> studentReports, String lecturerName) throws IOException {
         Path directoryPath = Paths.get("reports");
         Path filePath = directoryPath.resolve(lecturerName + ".csv");
 
@@ -351,43 +359,30 @@ public class Lecturer {
         }
 
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            writer.write("Student Name, Programme, Grade, Lecturer Feedback\n");
-            while (resultSet.next()) {
-                String studentName = resultSet.getString("StudentName");
-                String programmeName = resultSet.getString("ProgrammeName");
-                double grade = resultSet.getDouble("Grade");
-                String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
-                writer.write(studentName + ", " + programmeName + ", " + grade + ", " + lecturerFeedback + "\n");
+            writer.write("Student Name, Grade, Lecturer Feedback\n");
+            for (StudentReport report : studentReports) {
+                writer.write(report.getStudentName() + ", " + report.getGrade() + ", " + report.getFeedbackText() + "\n");
             }
             System.out.println("CSV report saved successfully at: " + filePath.toString());
         }
     }
 
-    private static void saveToTXT(ResultSet resultSet, String lecturerName) throws IOException, SQLException {
+    private static void saveToTXT(List<StudentReport> studentReports, String lecturerName) throws IOException {
         Path filePath = Paths.get("reports/" + lecturerName + ".txt");
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
-            writer.write("Student Name\tProgramme\tGrade\tLecturer Feedback\n");
-            while (resultSet.next()) {
-                String studentName = resultSet.getString("StudentName");
-                String programmeName = resultSet.getString("ProgrammeName");
-                double grade = resultSet.getDouble("Grade");
-                String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
-                writer.write(studentName + "\t" + programmeName + "\t" + grade + "\t" + lecturerFeedback + "\n");
+            writer.write("Student Name\tGrade\tLecturer Feedback\n");
+            for (StudentReport report : studentReports) {
+                writer.write(report.getStudentName() + "\t" + report.getGrade() + "\t" + report.getFeedbackText() + "\n");
             }
             System.out.println("TXT report saved successfully at: " + filePath.toString());
         }
     }
 
-    private static void printToConsole(ResultSet resultSet) throws SQLException {
-        while (resultSet.next()) {
-            String studentName = resultSet.getString("StudentName");
-            String programmeName = resultSet.getString("ProgrammeName");
-            double grade = resultSet.getDouble("Grade");
-            String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
-            System.out.println("Student Name: " + studentName);
-            System.out.println("Programme: " + programmeName);
-            System.out.println("Grade: " + grade);
-            System.out.println("Lecturer Feedback: " + lecturerFeedback + "\n");
+    private static void printToConsole(List<StudentReport> studentReports) {
+        for (StudentReport report : studentReports) {
+            System.out.println("Student Name: " + report.getStudentName());
+            System.out.println("Grade: " + report.getGrade());
+            System.out.println("Lecturer Feedback: " + report.getFeedbackText() + "\n");
         }
     }
 
