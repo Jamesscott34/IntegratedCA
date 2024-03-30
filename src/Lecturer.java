@@ -7,6 +7,10 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Scanner;
 
+/**
+ * Represents a lecturer in a college managment system.
+ * This class provides functionality related to managing lecturer data and generating reports.
+ */
 public class Lecturer {
     private static Scanner input = new Scanner(System.in);
     private static final String REPORTS_FOLDER = "reports";
@@ -205,6 +209,10 @@ public class Lecturer {
         }
     }
 
+    /**
+     * Creates a folder named "reports" if it does not exist.
+     * This folder is used for storing generated reports.
+     */
     private static void createReportsFolder() {
         Path folderPath = Paths.get(REPORTS_FOLDER);
         if (!Files.exists(folderPath)) {
@@ -217,11 +225,19 @@ public class Lecturer {
         }
     }
 
+    /**
+     * Generates a TXT report for a lecturer containing student names, course names, grades, and lecturer feedback.
+     * Retrieves data from the database based on the provided lecturer's name and writes it to a TXT file.
+     *
+     * @param lecturerName The name of the lecturer for whom the report is generated.
+     */
     public static void createTXTReport(String lecturerName) {
+        // Database connection parameters
         String jdbcUrl = "jdbc:mysql://localhost:3306/management";
         String username = "root";
         String password = "Alison12@";
 
+        // SQL query to retrieve report data
         String sql = "SELECT Students.StudentName, Courses.CourseName, Grades.Grade, Lecturerreports.LecturerFeedbackText " +
                 "FROM Lecturerreports " +
                 "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
@@ -233,7 +249,9 @@ public class Lecturer {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             try (ResultSet resultSet = statement.executeQuery()) {
+                // Define the file path for the TXT report
                 Path filePath = Paths.get("reports/" + lecturerName + ".txt");
+                // Write the result set data to the TXT file
                 writeTXTReportToFile(resultSet, filePath);
             }
             System.out.println("TXT report generated successfully!");
@@ -242,11 +260,19 @@ public class Lecturer {
         }
     }
 
+    /**
+     * Prints a report for a lecturer to the console.
+     * Retrieves data from the database based on the provided lecturer's name and prints it to the console.
+     *
+     * @param lecturerName The name of the lecturer for whom the report is printed.
+     */
     public static void printToConsole(String lecturerName) {
+        // Database connection parameters
         String jdbcUrl = "jdbc:mysql://localhost:3306/management";
         String username = "root";
         String password = "Alison12@";
 
+        // SQL query to retrieve report data
         String sql = "SELECT Students.StudentName, Courses.CourseName, Grades.Grade, Lecturerreports.LecturerFeedbackText " +
                 "FROM Lecturerreports " +
                 "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
@@ -258,6 +284,7 @@ public class Lecturer {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             try (ResultSet resultSet = statement.executeQuery()) {
+                // Print the report to the console
                 printReportToConsole(resultSet);
             }
         } catch (SQLException e) {
@@ -265,15 +292,23 @@ public class Lecturer {
         }
     }
 
-
+    /**
+     * Writes the data from the ResultSet to a TXT file.
+     *
+     * @param resultSet The ResultSet containing the data to be written.
+     * @param filePath   The path to the TXT file where the data will be written.
+     */
     private static void writeTXTReportToFile(ResultSet resultSet, Path filePath) {
         try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            // Write the TXT file header
             writer.write("Student Name\tCourse Name\tGrade\tLecturer Feedback\n");
+            // Write data for each row in the ResultSet
             while (resultSet.next()) {
                 String studentName = resultSet.getString("StudentName");
                 String courseName = resultSet.getString("CourseName");
                 double grade = resultSet.getDouble("Grade");
                 String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
+                // Write data for each row to the TXT file
                 writer.write(studentName + "\t" + courseName + "\t" + grade + "\t" + lecturerFeedback + "\n");
             }
         } catch (SQLException | IOException e) {
@@ -281,13 +316,20 @@ public class Lecturer {
         }
     }
 
+    /**
+     * Prints the report data from the ResultSet to the console.
+     *
+     * @param resultSet The ResultSet containing the report data.
+     */
     private static void printReportToConsole(ResultSet resultSet) {
         try {
+            // Iterate over the ResultSet and print each row to the console
             while (resultSet.next()) {
                 String studentName = resultSet.getString("StudentName");
                 String courseName = resultSet.getString("CourseName");
                 double grade = resultSet.getDouble("Grade");
                 String lecturerFeedback = resultSet.getString("LecturerFeedbackText");
+                // Print data for each row to the console
                 System.out.println("Student Name: " + studentName);
                 System.out.println("Course Name: " + courseName);
                 System.out.println("Grade: " + grade);
@@ -297,4 +339,5 @@ public class Lecturer {
             System.err.println("Error printing report to console: " + e.getMessage());
         }
     }
+
 }
