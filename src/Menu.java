@@ -1,5 +1,9 @@
+
+/**
+ * The Menu class represents the main menu of the College Management System.
+ * It provides functionalities for user authentication, login, and navigation through different user roles.
+ */
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 import java.sql.*;
 
@@ -10,22 +14,29 @@ public class Menu {
     private static UserRole currentUserRole;
     private static String loggedInUsername;
 
-
-
-    public Menu() {
-        this.input = new Scanner(System.in);
-
-    }
-
+    /**
+     * Enum to represent different user roles.
+     */
     public enum UserRole {
         ADMIN,
         LECTURER,
         OFFICE
     }
 
+    /**
+     * Constructor to initialize the Menu class with a scanner object.
+     */
+    public Menu() {
+        this.input = new Scanner(System.in);
+    }
+
+    /**
+     * Displays the main menu of the College Management System.
+     */
     public void displayMainMenu() {
         boolean loggedIn = false;
 
+        // Display the main menu until the user logs in
         while (!loggedIn) {
             System.out.println("Welcome to the College Management System!");
             System.out.println("1. Admin Login");
@@ -45,6 +56,7 @@ public class Menu {
             }
         }
 
+        // Display the user menu based on the logged-in user's role
         while (loggedIn && currentUserRole != null) {
             if (currentUserRole == UserRole.ADMIN) {
                 displayUserMenu(currentUserRole);
@@ -60,6 +72,10 @@ public class Menu {
         }
     }
 
+    /**
+     * Handles the login process for an admin user.
+     * @return true if login is successful, false otherwise
+     */
     private boolean loginAdmin() {
         String adminUsername = getStringInput("Enter admin username");
         String adminPassword = getStringInput("Enter admin password");
@@ -99,6 +115,10 @@ public class Menu {
         }
     }
 
+    /**
+     * Handles the actions based on the admin menu choice.
+     * @param choice the menu choice selected by the admin user
+     */
     private void handleAdminMenu(int choice) {
         switch (choice) {
             case 1:
@@ -129,11 +149,15 @@ public class Menu {
                 System.out.println("Invalid choice. Please try again.");
         }
     }
+
+    /**
+     * Displays users from all tables (Admins, Lecturers, Office) in the database.
+     */
     private void displayUsersFromAllTables() {
         // Get users from each table and display them
-        java.util.List<User> adminUsers = Admin.getUsersFromDatabase("ADMINS");
-        java.util.List<User> lecturerUsers = Admin.getUsersFromDatabase("LECTURER");
-        java.util.List<User> officeUsers = Admin.getUsersFromDatabase("OFFICE");
+        List<User> adminUsers = Admin.getUsersFromDatabase("ADMINS");
+        List<User> lecturerUsers = Admin.getUsersFromDatabase("LECTURER");
+        List<User> officeUsers = Admin.getUsersFromDatabase("OFFICE");
 
         // Display users from each table
         System.out.println("Admins:");
@@ -145,6 +169,10 @@ public class Menu {
         System.out.println("Office:");
         Admin.displayUsers(officeUsers);
     }
+
+    /**
+     * Deletes a user from the selected table.
+     */
     public static void deleteUser() {
         Scanner scanner = new Scanner(System.in);
 
@@ -171,11 +199,11 @@ public class Menu {
                 break;
         }
     }
-
-
-
-
-
+    /**
+     * Reads an integer input from the user using the provided Scanner object.
+     * @param scanner Scanner object to read input from
+     * @return The integer input provided by the user
+     */
     static int getIntInput(Scanner scanner) {
         while (true) {
             try {
@@ -188,9 +216,9 @@ public class Menu {
         }
     }
 
-
-
-
+    /**
+     * Displays the New User Menu and handles user login or exit.
+     */
     private void NewUserMenu() {
         boolean loggedIn = false;
 
@@ -214,6 +242,10 @@ public class Menu {
         }
     }
 
+    /**
+     * Handles the login process for a user.
+     * @return true if login is successful, false otherwise
+     */
     private boolean loginUser() {
         Scanner scanner = new Scanner(System.in);
 
@@ -237,16 +269,15 @@ public class Menu {
                 userRole = UserRole.OFFICE;
                 break;
             case 4:
-                System.out.println("You have now logged out of the programme ...... Goodbye");
+                System.out.println("You have now logged out of the program. Goodbye.");
                 System.exit(0);
             default:
                 System.out.println("Invalid role choice.");
                 return false;
         }
 
-//        boolean loggedIn = authenticateUser(userRole);
         String username = authenticateUser(userRole);
-        if(username != null) {
+        if (username != null) {
             loggedInUsername = username;
         }
 
@@ -256,8 +287,9 @@ public class Menu {
         }
 
         return username != null;
-//        return loggedIn;
     }
+
+
 
     /**
      * Authenticates a user
@@ -302,7 +334,7 @@ public class Menu {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-//        return false;
+
         return null;
     }
 
