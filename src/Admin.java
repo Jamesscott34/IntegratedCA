@@ -1,6 +1,26 @@
 import java.sql.*;
 import java.util.*;
 
+/**
+
+ The Admin class provides functionalities related to administrative tasks in a management system.
+ It includes methods for modifying admin user information such as username and password, adding new users manually,
+ retrieving and displaying users from the database, and deleting users from specified tables.
+ Methods:
+ modifyUser(): Allows modification of the admin username.
+ updateUserInDatabase(String newUsername): Updates admin username in the database.
+ getUsersFromDatabase(String tableName): Retrieves a list of users from a specified table in the database.
+ displayUsers(List<User> users): Displays a list of users with their usernames.
+ changePassword(String username): Changes the password for a specified user.
+ updatePasswordInDatabase(String username, String newPassword): Updates the password of a user in the database.
+ addNewUserManually(): Allows an admin to add a new user manually to the database.
+ deleteFromTable(String tableName, Scanner scanner): Deletes a user from the specified table in the database.
+ */
+
+
+
+
+
 
 public class Admin {
     private static Scanner input = new Scanner(System.in);
