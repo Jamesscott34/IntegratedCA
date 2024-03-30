@@ -22,8 +22,6 @@ import static com.mysql.cj.conf.PropertyKey.PASSWORD;
 
 
 
-
-
 public class Admin {
 
     private static Scanner input = new Scanner(System.in);
