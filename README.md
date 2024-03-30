@@ -14,6 +14,13 @@ Similarly, the Office class addresses the operational needs of administrative st
 
 The project includes several Java classes to manage different roles within the university:
 
+## Table of Contents
+1. [Admin.java](#admin-java)
+2. [Lecturer.java](#lecturer-java)
+3. [Office.java](#office-java)
+4. [User.java](#user-java)
+5. [Main.java](#main-java)
+
 ### Admin.java
 -Implements functionalities for modifying usernames, changing passwords, adding new users, deleting users, and generating reports.
 -Utilizes updateUserInDatabase() and updatePasswordInDatabase() methods to update usernames and passwords, respectively.
