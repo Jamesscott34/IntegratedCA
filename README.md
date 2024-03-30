@@ -21,7 +21,7 @@ The project includes several Java classes to manage different roles within the u
 4. [User.java](#user-java)
 5. [Main.java](#main-java)
 
-### Admin.java
+### [Admin.java](#admin-java)
 -Implements functionalities for modifying usernames, changing passwords, adding new users, deleting users, and generating reports.
 -Utilizes updateUserInDatabase() and updatePasswordInDatabase() methods to update usernames and passwords, respectively.
 -Employs addNewUserManually() to allow manual addition of users to the system.
@@ -30,7 +30,7 @@ The project includes several Java classes to manage different roles within the u
 -Includes error handling mechanisms for database operations using try-catch blocks.
 -Ensures secure password handling through PreparedStatement parameters to prevent SQL injection attacks.
 -Facilitates user-friendly interactions through input prompts and success/failure messages.
-### Lecturer.java
+### [Lecturer.java](#lecturer-java)
 -Offers functionalities tailored for lecturers, particularly in report generation and management.
 -Implements methods such as createCSVReport() and createTXTReport() to generate reports in CSV and TXT formats, respectively.
 -Provides printToConsole() method to display reports directly on the console for quick access.
@@ -39,7 +39,7 @@ The project includes several Java classes to manage different roles within the u
 -Incorporates robust exception handling to gracefully handle database connectivity and query execution errors.
 -Supports a seamless user experience through clear and concise console output.
 -Promotes data integrity by securely accessing and processing sensitive information from the database.
-### Office.java
+### [Office.java](#office-java)
 -Centralizes functionalities related to office management tasks within the university system.
 -Implements methods like ChangeUserName() and changePassword() to facilitate username and password updates for office users.
 -Offers report generation capabilities through createCSVReport() and createTXTReport() methods for office-related data analysis.
@@ -48,7 +48,7 @@ The project includes several Java classes to manage different roles within the u
 -Incorporates error handling mechanisms to address potential database connectivity issues or query failures.
 -Provides a user-friendly interface with intuitive prompts and feedback messages.
 -Fosters a secure environment by utilizing parameterized queries to prevent SQL injection attacks.
-### User.java
+### [User.java](#user-java)
 -Represents a fundamental entity within the university system, storing essential attributes like username and role.
 -Implements getters and setters to facilitate access and modification of user attributes.
 -Supports role-based access control by storing and managing user roles.
@@ -57,7 +57,7 @@ The project includes several Java classes to manage different roles within the u
 -Supports role-based functionalities by providing role-specific operations and permissions.
 -Promotes code maintainability and readability by adhering to object-oriented principles.
 -Enhances data integrity by enforcing encapsulation and controlled access to user attributes.
-### Main.java
+### [Main.java](#main-java)
 -Serves as the entry point for the application, orchestrating user ----interactions and system navigation.
 -Implements the main() method to initialize the application and display the main menu.
 -Offers intuitive navigation through the system using the Menu class methods.
