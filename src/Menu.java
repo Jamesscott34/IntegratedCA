@@ -411,20 +411,25 @@ public class Menu {
         // Get user's choice
         int choice = getIntInput();
 
+        // Define the output format based on user's choice
+        String outputFormat;
         switch (choice) {
             case 1:
-                Lecturer.generateReport(loggedInUsername, "CSV");
+                outputFormat = "csv";
                 break;
             case 2:
-                Lecturer.generateReport(loggedInUsername, "TXT");
+                outputFormat = "txt";
                 break;
             case 3:
-                Lecturer.generateReport(loggedInUsername, "console");
+                outputFormat = "console";
                 break;
             default:
                 System.out.println("Invalid choice.");
-                break;
+                return;
         }
+
+        // Generate the report based on the selected output format
+        Lecturer.generateReport(loggedInUsername, outputFormat);
     }
 
 

@@ -2,11 +2,13 @@ public class StudentReport {
     private String studentName;
     private double grade;
     private String feedbackText;
+    private int courseID;
 
-    public StudentReport(String studentName, double grade, String feedbackText) {
+    public StudentReport(String studentName, double grade, String feedbackText, int courseID) {
         this.studentName = studentName;
         this.grade = grade;
         this.feedbackText = feedbackText;
+        this.courseID = courseID;
     }
 
     public String getStudentName() {

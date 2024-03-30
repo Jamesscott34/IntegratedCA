@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import static com.mysql.cj.conf.PropertyKey.PASSWORD;
-
 
 /**
  * Represents a lecturer in a college managment system.
@@ -150,16 +148,6 @@ public class Lecturer {
 
 
 
-    private static void generateLecturerSpecificReport() {
-        String lecturerName = getLecturerName();
-        String outputFormat = getOutputFormat();
-
-        if ("txt".equalsIgnoreCase(outputFormat) || "csv".equalsIgnoreCase(outputFormat) || "terminal".equalsIgnoreCase(outputFormat)) {
-            generateReport(lecturerName, outputFormat);
-        } else {
-            System.out.println("Invalid output format.");
-        }
-    }
 
     static String getLecturerName() {
         Scanner input = new Scanner(System.in);
@@ -199,35 +187,39 @@ public class Lecturer {
         }
     }
 
-    public static void generateReport(String lecturerName, String outputFormat) {
+    public static List<StudentReport> generateReport(String lecturerName, String outputFormat) {
+        List<StudentReport> studentReports = new ArrayList<>();
+
+        // Get the list of students for the given lecturer
         List<String> students = getStudentsForLecturer(lecturerName);
 
         if (students.isEmpty()) {
             System.out.println("No students found for the lecturer.");
-            return;
+            return studentReports;
         }
 
-        Scanner scanner = new Scanner(System.in);
+        // Prompt user to select a student
         System.out.println("Select a student:");
         for (int i = 0; i < students.size(); i++) {
             System.out.println((i + 1) + ". " + students.get(i));
         }
+
+        Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the number of the student: ");
         int choice = scanner.nextInt();
 
+        // Get the selected student
         String selectedStudent = students.get(choice - 1);
 
-        String sql = "SELECT Lecturerreports.StudentName, Lecturerreports.Grade, Lecturerreports.LecturerFeedbackText " +
+        // SQL query to retrieve student reports
+        String sql = "SELECT StudentName, Grade, LecturerFeedbackText, CourseID " +
                 "FROM Lecturerreports " +
-                "INNER JOIN Students ON Lecturerreports.StudentID = Students.StudentID " +
-                "WHERE Lecturerreports.LecturerID = (SELECT LecturerID FROM Lecturer WHERE Username = ?) " +
-                "AND Lecturerreports.StudentName = ?";
-
-        // List to store the reports
-        List<StudentReport> studentReports = new ArrayList<>();
+                "WHERE LecturerID = (SELECT LecturerID FROM Lecturer WHERE Username = ?) " +
+                "AND StudentName = ?";
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
+            // Set parameters in the prepared statement
             statement.setString(1, lecturerName);
             statement.setString(2, selectedStudent);
 
@@ -238,24 +230,16 @@ public class Lecturer {
                     String studentName = resultSet.getString("StudentName");
                     double grade = resultSet.getDouble("Grade");
                     String feedbackText = resultSet.getString("LecturerFeedbackText");
-                    studentReports.add(new StudentReport(studentName, grade, feedbackText));
+                    int courseID = resultSet.getInt("CourseID");
+                    studentReports.add(new StudentReport(studentName, grade, feedbackText, courseID));
                 }
             }
-
-            // Process the list based on the output format
-            if ("csv".equalsIgnoreCase(outputFormat)) {
-                saveToCSV(studentReports, lecturerName);
-            } else if ("txt".equalsIgnoreCase(outputFormat)) {
-                saveToTXT(studentReports, lecturerName);
-            } else {
-                printToConsole(studentReports);
-            }
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        return studentReports;
     }
-
-
     public static List<String> getStudentsForLecturer(String lecturerName) {
         List<String> students = new ArrayList<>();
 
