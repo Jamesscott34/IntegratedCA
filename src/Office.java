@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Scanner;
 
-import static com.mysql.cj.conf.PropertyKey.PASSWORD;
+
 
 /**
  * Represents the office functionality in a university system.
@@ -64,7 +64,7 @@ public class Office {
         boolean updated = false;
 
         try {
-            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
             String sql = "UPDATE OFFICE SET username = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newUsername);
@@ -101,7 +101,7 @@ public class Office {
         boolean updated = false;
 
         try {
-            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
             String sql = "UPDATE OFFICE SET password = ? WHERE role = ?";
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, newPassword);
@@ -139,7 +139,7 @@ public class Office {
                 "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
                 "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
@@ -165,7 +165,7 @@ public class Office {
                 "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
                 "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
@@ -191,7 +191,7 @@ public class Office {
                 "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
                 "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 

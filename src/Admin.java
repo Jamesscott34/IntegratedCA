@@ -38,7 +38,7 @@ public class Admin {
     public static void modifyUser() {
         // Prompt the admin to enter the new username
         System.out.print("Enter the new username: ");
-        String newUsername = input.nextLine(); // Assuming 'input' is a Scanner object
+        String newUsername = input.nextLine();
 
         // Update the username in the database
         boolean updated = updateUserInDatabase(newUsername);
@@ -64,7 +64,7 @@ public class Admin {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
 
             // Prepare SQL query to update username
             String sql = "UPDATE ADMINS SET username = ? WHERE role = ?";
@@ -105,7 +105,7 @@ public class Admin {
 
         // Execute the SQL query and retrieve the data from the database
         List<User> users = new ArrayList<>();
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD))) {
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD)) {
             try (Statement statement = connection.createStatement();
                  ResultSet resultSet = statement.executeQuery(sqlQuery)) {
                 while (resultSet.next()) {
@@ -169,7 +169,7 @@ public class Admin {
 
         try {
             // Establish connection to the database
-            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
 
             // Prepare SQL statement to update password
             String sql = "UPDATE ADMINS SET password = ? WHERE username = ?";
@@ -211,7 +211,7 @@ public class Admin {
 
         try {
             // Connect to the database
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
 
             // Prompt the admin for user details
             System.out.print("Enter role (Admin/Lecturer/Office): ");

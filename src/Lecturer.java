@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import static com.mysql.cj.conf.PropertyKey.PASSWORD;
+
 
 /**
  * Represents a lecturer in a college managment system.
@@ -74,7 +74,7 @@ public class Lecturer {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
 
             // Prepare SQL query to update username
             String sql = "UPDATE LECTURER SET username = ? WHERE role = ?";
@@ -117,7 +117,7 @@ public class Lecturer {
 
         try {
             // Establish connection to MySQL database
-            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
 
             // Prepare SQL query to update password
             String sql = "UPDATE LECTURER SET password = ? WHERE role = ?";
@@ -175,7 +175,7 @@ public class Lecturer {
                 "INNER JOIN Lecturer ON LecturerFeedback.LecturerID = Lecturer.LecturerID " +
                 "WHERE Lecturer.Username = ? AND Students.StudentName = ?";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             statement.setString(2, selectedStudent);
@@ -223,7 +223,7 @@ public class Lecturer {
                 "INNER JOIN Programmes ON Courses.ProgrammeID = Programmes.ProgrammeID " +
                 "WHERE Lecturer.Username = ?";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, lecturerName);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -243,7 +243,7 @@ public class Lecturer {
         String sql = "SELECT StudentName FROM Students WHERE ProgrammeID = " +
                 "(SELECT ProgrammeID FROM Programmes WHERE ProgrammeName = ?)";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, programmeName);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -267,7 +267,7 @@ public class Lecturer {
                 "INNER JOIN Programmes ON Courses.ProgrammeID = Programmes.ProgrammeID " +
                 "WHERE Programmes.ProgrammeName = ?";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, programmeName);
             try (ResultSet resultSet = statement.executeQuery()) {

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.sql.*;
 
-import static com.mysql.cj.conf.PropertyKey.PASSWORD;
+
 
 public class Menu {
     private static Scanner input;
@@ -85,7 +85,7 @@ public class Menu {
         ResultSet rs = null;
 
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+            conn = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
 
             String sql = "SELECT * FROM Admins WHERE username = ? AND password = ?";
             stmt = conn.prepareStatement(sql);
@@ -316,7 +316,7 @@ public class Menu {
                 return username;
         }
 
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/management", "root", "Alison12@");
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
             statement.setString(1, username);
             statement.setString(2, password);
@@ -482,7 +482,7 @@ public class Menu {
 
         String sql = "SELECT LecturerName FROM Lecturer";
 
-        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, String.valueOf(PASSWORD));
+        try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
