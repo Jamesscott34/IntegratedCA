@@ -1,53 +1,38 @@
 import java.sql.*;
 
+/**
+ * Represents a user in the university system.
+ */
 public class User {
     private String username;
-    private String password;
     private String role;
 
-    public User(int userId, String username, String password, String role) {
-        this.username = username;
-        this.password = password;
-        this.role = role;
-    }
-
+    /**
+     * Constructs a new User with the specified username and role.
+     *
+     * @param username The username of the user.
+     * @param role     The role of the user.
+     */
     public User(String username, String role) {
         this.username = username;
         this.role = role;
     }
 
-    public static void logout() {
-        // Perform any necessary cleanup or logout actions here
-        System.out.println("Logged out successfully.");
-
-        // Close the program
-        System.exit(0);
-    }
-
-
-
-    // Getters and setters
+    /**
+     * Retrieves the username of the user.
+     *
+     * @return The username of the user.
+     */
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
+    /**
+     * Retrieves the role of the user.
+     *
+     * @return The role of the user.
+     */
     public String getRole() {
         return this.role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 }
