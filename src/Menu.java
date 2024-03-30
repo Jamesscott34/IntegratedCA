@@ -426,11 +426,47 @@ public class Menu {
                 generateOfficeSpecificReport();
                 break;
             case 2:
-                // Call the method from Lecturer class
+                generatLecturerSpecificReport();
                 break;
             default:
                 System.out.println("Invalid choice.");
                 break;
+        }
+    }
+
+    private static void generatLecturerSpecificReport() {
+        String lecturerName = getLecturerName();
+        String outputFormat = getOutputFormat();
+
+        if (outputFormat.equals("txt") || outputFormat.equals("csv") || outputFormat.equals("terminal")) {
+            Lecturer.generateReport(lecturerName, outputFormat);
+        } else {
+            System.out.println("Invalid output format.");
+        }
+    }
+
+    private static String getLecturerName() {
+        System.out.print("Enter the lecturer's name: ");
+        return input.nextLine();
+    }
+
+    private static String getOutputFormat() {
+        System.out.println("Choose the output format:");
+        System.out.println("1. Text");
+        System.out.println("2. CSV");
+        System.out.println("3. Terminal");
+
+        int choice = getIntInput();
+
+        switch (choice) {
+            case 1:
+                return "txt";
+            case 2:
+                return "csv";
+            case 3:
+                return "terminal";
+            default:
+                return "invalid";
         }
     }
 

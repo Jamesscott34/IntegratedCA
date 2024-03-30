@@ -1,5 +1,7 @@
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -132,12 +134,12 @@ public class Office {
      * @param lecturerName The name of the lecturer for whom the report is generated.
      */
     public static void createCSVReport(String lecturerName) {
-
-
-        String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
-                "FROM Officereports " +
-                "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
-                "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
+        String sql = "SELECT S.StudentName, C.CourseName, E.Grade, SF.FeedbackText AS LecturerFeedbackText, SF.FeedbackText AS StudentFeedbackText, C.Room " +
+                "FROM Students S " +
+                "JOIN Enrollments E ON S.StudentID = E.StudentID " +
+                "JOIN StudentFeedback SF ON S.StudentID = SF.StudentID AND E.CourseID = SF.CourseID " +
+                "JOIN Courses C ON E.CourseID = C.CourseID " +
+                "JOIN Lecturer L ON C.LecturerID = L.Lecturer_id";
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -158,23 +160,39 @@ public class Office {
      * @param lecturerName The name of the lecturer for whom the report is generated.
      */
     public static void createTXTReport(String lecturerName) {
-
-
-        String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
-                "FROM Officereports " +
-                "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
-                "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
+        String sql = "SELECT S.StudentName, C.CourseName, ORG.Grade, ORG.LecturerFeedbackText, ORG.StudentFeedbackText, ORG.Room " +
+                "FROM Officereports ORG " +
+                "INNER JOIN Students S ON ORG.StudentID = S.StudentID " +
+                "INNER JOIN Courses C ON ORG.CourseID = C.CourseID";
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
 
             Path filePath = Paths.get("reports/officereport.txt");
-            writeReportToFile(resultSet, filePath);
+            writeTxtReportToFile(resultSet, filePath); // Call the method to write the report
 
             System.out.println("TXT report generated successfully!");
         } catch (SQLException | IOException e) {
             System.err.println("Database error: " + e.getMessage());
+        }
+    }
+
+    private static void writeTxtReportToFile(ResultSet resultSet, Path filePath) throws IOException, SQLException {
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
+            writer.write("Lecturer Name, Office Name, Student Name, Course Name, Student Feedback\n");
+
+            while (resultSet.next()) {
+                String lecturerName = resultSet.getString("LecturerName");
+                String officeName = resultSet.getString("OfficeName");
+                String studentName = resultSet.getString("StudentName");
+                String courseName = resultSet.getString("CourseName");
+                String studentFeedback = resultSet.getString("StudentFeedbackText");
+
+                writer.write(lecturerName + ", " + officeName + ", " + studentName + ", " + courseName + ", " + studentFeedback + "\n");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -184,12 +202,10 @@ public class Office {
      * @param lecturerName The name of the lecturer for whom the report is generated.
      */
     public static void printToConsole(String lecturerName) {
-
-
-        String sql = "SELECT Students.StudentName, Courses.CourseName, Officereports.Grade, Officereports.LecturerFeedbackText, Officereports.StudentFeedbackText, Officereports.Room " +
-                "FROM Officereports " +
-                "INNER JOIN Students ON Officereports.StudentID = Students.StudentID " +
-                "INNER JOIN Courses ON Officereports.CourseID = Courses.CourseID";
+        String sql = "SELECT S.StudentName, C.CourseName, ORG.Grade, ORG.LecturerFeedbackText, ORG.StudentFeedbackText, ORG.Room " +
+                "FROM Officereports ORG " +
+                "INNER JOIN Students S ON ORG.StudentID = S.StudentID " +
+                "INNER JOIN Courses C ON ORG.CourseID = C.CourseID";
 
         try (Connection connection = DriverManager.getConnection(User.JDBC_URL, User.USERNAME, User.PASSWORD);
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -216,6 +232,7 @@ public class Office {
         }
     }
 
+
     /**
      * Writes the office report data to a file.
      *
@@ -225,7 +242,7 @@ public class Office {
      * @throws SQLException If a SQL error occurs while processing the result set.
      */
     private static void writeReportToFile(ResultSet resultSet, Path filePath) throws IOException, SQLException {
-        try (FileWriter writer = new FileWriter(filePath.toFile())) {
+        try (BufferedWriter writer = Files.newBufferedWriter(filePath)) {
             writer.write("Student Name, Course Name, Grade, Lecturer Feedback, Student Feedback, Room\n");
 
             while (resultSet.next()) {
